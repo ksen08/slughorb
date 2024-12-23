@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
 int s21_sprintf(char *str, const char *format, ...){ 
     va_list args; 
     va_start(args, format);
@@ -15,17 +14,16 @@ int s21_sprintf(char *str, const char *format, ...){
             format++;
             spec specific = {0};
             format = parser_flags(format, &specific);
-            format = parser_width(format, &args, &specific.width);
-            format = parser_accuracy(format, &args, &specific);
+            format = parser_width(format, args, &specific.width);
+            format = parser_accuracy(format, args, &specific);
             //длина
-            if(*format == 'h' || *format == 'l'){ 
+            /*if(*format == 'h' || *format == 'l'){ 
                 switch(*format){ 
                     case 'h': 
                         break; 
                     case 'l': 
                         break; 
                 } 
- 
             } 
             format++; 
  
@@ -42,7 +40,7 @@ int s21_sprintf(char *str, const char *format, ...){
                 case 'u': 
                     break; 
             } 
-            format++; 
+            format++; */
             if (*format == 'd') {
                 int value = va_arg(args, int);  // Извлекаем число
                 char temp[50];
@@ -115,9 +113,9 @@ const char *parser_flags(const char *format, spec *specific) {
     return format;
 }
 
-const char *parser_width(const char *format, va_list *args, int *width) {
+const char *parser_width(const char *format, va_list args, int *width) {
     if(*format == '*'){ //есть два варианта ширины, если не звездочка, то другое 
-        *width = va_arg(*args, int); 
+        *width = va_arg(args, int); 
         format++; 
     } else { //перевод символа в число
         *width = 0;
@@ -136,14 +134,12 @@ const char *parser_accuracy(const char *format, va_list args, spec *specific) {
         format++;
         parser_width(format, args, &specific->accuracy);
     } else {
-        specific->accuracy = -1; //не указана точностьыы
+        specific->accuracy = -1; //не указана точность
     }
     return format;
 }
 int main() {
     char buffer[100];
-    printf("hyi");
-    sprintf(buffer, "%5.3d", 42);
+    s21_sprintf(buffer, "%*d", 4,42);
     printf("Result: '%s'\n", buffer);
-    printf("mmm");
 }

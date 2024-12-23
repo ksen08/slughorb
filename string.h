@@ -1,11 +1,28 @@
 #ifndef S21_STRING_H_
 #define S21_STRING_H_
 
-
 #include <stdio.h>
+#include <stdarg.h>
+#include <stddef.h>
 
-#define s21_NULL NULL
-typedef size_t s21_size_t;
+#define s21_NULL (void*)0
+typedef unsigned long s21_size_t;
+
+typedef struct {
+    int plus;
+    int minus;
+    int space; //пробел
+    int width;
+    int accuracy; //точность
+    int point;
+    int zero;
+    int length_h;
+    int length_l;
+} spec;
+
+const char *parser_flags(const char *format,  spec *specific);
+const char *parser_width(const char *format, va_list args, int *width);
+const char *parser_accuracy(const char *format, va_list args, spec *specific);
 
 #if defined(__APPLE__) 
 #define N 106
