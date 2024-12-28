@@ -23,7 +23,8 @@ typedef struct {
 const char *parser_flags(const char *format, spec *specific);
 const char *parser_width(const char *format, va_list args, int *width);
 const char *parser_accuracy(const char *format, va_list args, spec *specific);
-
+char *itoa_s21(long int n, char *buff, int base);
+char *reverse(char *str, int start, int end);
 #if defined(__APPLE__)
 #define N 106
 #define ERROR                                         \

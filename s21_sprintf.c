@@ -31,16 +31,16 @@ int s21_sprintf(char *str, const char *format, ...) {
       }
       format++;
       // спецификаторы
-      switch (*format) { //
-        case 'c'://diana
+      switch (*format) {  //
+        case 'c':         // diana
           break;
-        case 'd'://ksenia
+        case 'd':  // ksenia
           break;
         case 'i':
           break;
-        case 'f'://diana
+        case 'f':  // diana
           break;
-        case 's'://ksenia
+        case 's':  // ksenia
           break;
         case 'u':
           break;
@@ -90,12 +90,14 @@ int s21_sprintf(char *str, const char *format, ...) {
           }
         }
 
-        format++;*/
-    }  //
+        format++;
+      }
+    }*/
+      *str = '\0';
+      va_end(args);
+      return (str - start);
+    }
   }
-  *str = '\0';
-  va_end(args);
-  return (str - start);
 }
 
 const char *parser_flags(const char *format, spec *specific) {
@@ -148,15 +150,54 @@ const char *parser_accuracy(const char *format, va_list args, spec *specific) {
 }
 void spec_d(char *str, spec *specific, va_list args) {
   long int n = 0;
-  if (specific->length_h == 1) 
-    n = (short)va_arg(args, short); //получить аргументы из списка
+  if (specific->length_h == 1)
+    n = (short)va_arg(args, short);  // извлекаем число
   else if (specific->length_l == 1)
     n = (long)va_arg(args, long);
-  else 
+  else
     n = (int)va_arg(args, int);
+  char buff[1000];  // сколько выделять???
+  n = itoa_s21(n, *buff, 10);
+}
+
+char *itoa_s21(long int n, char *buff,
+               int base) {  // преобразуемое число, строка, которой число
+                            // должно стать, основание системы
+  int i = 0;
+  int minus = 0;
+  if (n < 0) {
+    minus = 1;
+    n = -n;
+  }
+  if (n == 0) {
+    buff[i++] = '0';
+  }
+  while (n > 0) {
+    long int next = n % base;
+    if (next < 10)
+      buff[i++] = next + '0';
+    else
+      buff[i++] = next - 10 + 'A';
+    n /= base;
+  }
+  buff[i] = '\0';
+  return reverse(buff, 0, i - 1);
+}
+char *reverse(char *str, int start, int end) {
+  char temp;
+  while (start < end) {
+    temp = str[start];
+    str[start] = str[end];
+    str[end] = temp;
+    start++;
+    end--;
+  }
+  return str;
 }
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "%*d", 4, 42);
+  s21_sprintf(buffer, "%4d", 4, 42);
   printf("Result: '%s'\n", buffer);
+  int n = 28;
+  printf("%d", n / 10);
 }
