@@ -173,16 +173,17 @@ char *itoa_s21(long int n, char *buff,
     buff[i++] = '0';
   }
   while (n > 0) {
-    long int next = n % base;
+    long int next = n % 10;
     if (next < 10)
       buff[i++] = next + '0';
     else
       buff[i++] = next - 10 + 'A';
-    n /= base;
+    n /= 10;
   }
   buff[i] = '\0';
   return reverse(buff, 0, i - 1);
 }
+
 char *reverse(char *str, int start, int end) {
   char temp;
   while (start < end) {
