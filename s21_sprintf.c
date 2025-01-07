@@ -14,9 +14,9 @@ int s21_sprintf(char *str, const char *format, ...) {
     } else {
       format++;
       spec specific = {0};
-      // format = parser_flags(format, &specific);
-      // format = parser_width(format, args, &specific.width);
-      // format = parser_accuracy(format, args, &specific);
+      format = parser_flags(format, &specific);
+      format = parser_width(format, args, &specific.width);
+      format = parser_accuracy(format, args, &specific);
       if (*format == 'h' || *format == 'l') {
         switch (*format) {
           case 'h':
@@ -35,8 +35,6 @@ int s21_sprintf(char *str, const char *format, ...) {
         case 'c':         // diana
           break;
         case 'd':  // ksenia
-          break;
-        case 'i':
           break;
         case 'f':  // diana
           break;
@@ -113,6 +111,8 @@ const char *parser_flags(const char *format, spec *specific) {
       case ' ':
         specific->space = 1;
         break;
+      case '0':
+        specific->zero = 1;
     }
     format++;
   }
@@ -123,26 +123,26 @@ const char *parser_flags(const char *format, spec *specific) {
 }
 
 const char *parser_width(const char *format, va_list args, int *width) {
-  if (*format ==
+  /*if (*format ==
       '*') {  // есть два варианта ширины, если не звездочка, то другое
     *width = va_arg(args, int);
     format++;
   } else {  // перевод символа в число
-    *width = 0;
-    while (*format >= '0' && *format <= '9') {
-      *width *= 10;
-      *width += *format - '0';
-      format++;
-    }
+  */
+  *width = 0;
+  while (*format >= '0' && *format <= '9') {
+    *width *= 10;
+    *width += *format - '0';
+    format++;
   }
   return format;
 }
 const char *parser_accuracy(const char *format, va_list args, spec *specific) {
   if (*format == '.') {
-    specific->point = 1;  //???
-    specific->zero = 0;
+    specific->point = 1;  // точность используется
+    specific->zero = 0;   // тогда не надо ведущие нули
     format++;
-    parser_width(format, args, &specific->accuracy);
+    format = parser_width(format, args, &specific->accuracy);
   } else {
     specific->accuracy = -1;  // не указана точность
   }
@@ -151,15 +151,34 @@ const char *parser_accuracy(const char *format, va_list args, spec *specific) {
 void spec_d(char *str, spec *specific, va_list args) {
   long int n = 0;
   if (specific->length_h == 1)
-    n = (short)va_arg(args, short);  // извлекаем число
+    n = (short)va_arg(args, int);  // извлекаем число
   else if (specific->length_l == 1)
-    n = (long)va_arg(args, long);
+    n = (long)va_arg(args, long int);
   else
-    n = (int)va_arg(args, int);
-  char buff[1000];  // сколько выделять???
-  n = itoa_s21(n, *buff, 10);
+    n = va_arg(args, int);
+  itoa_s21(n, str, 10);
+  int len = strlen(str);
+  int len_accuracy_length = 0;
+  if (specific->accuracy != -1 && specific->accuracy > len)
+    len_accuracy_length = specific->accuracy - len;
+  // добавление знака
+  /*if (specific->minus == 1)
+    *str++ = '-';
+  else if (specific->plus == 1)
+    *str++ = '+';
+  else if (specific->space == 1)
+    *str++ = ' ';*/
+  // добавить обработку числа 0 с точностью 0
+  if (n != 0 ||
+      (specific->accuracy != -1 && len_accuracy_length != 0 && n == 0)) {
+    if (specific->minus == 1 && n < 0) *str++ = '-';
+    if (specific->plus == 1 && n >= 0) *str++ = '+';
+    if (specific->space == 1 && n >= 0) *str++ = ' ';
+    if (specific->zero == 1) {
+      for (int i = 0; i < len_accuracy_length; i++) *str++ = '0';
+    }
+  }
 }
-
 char *itoa_s21(long int n, char *buff,
                int base) {  // преобразуемое число, строка, которой число
                             // должно стать, основание системы
