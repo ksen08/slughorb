@@ -14,15 +14,15 @@ typedef struct {
   int space;  // пробел
   int width;
   int accuracy;  // точность
-  int point;
-  int zero;
   int length_h;
   int length_l;
 } spec;
 
 const char *parser_flags(const char *format, spec *specific);
-const char *parser_width(const char *format, va_list args, int *width);
+const char *parser_wa(const char *format, va_list args, int *value);
+const char *parser_width(const char *format, va_list args, spec *specific);
 const char *parser_accuracy(const char *format, va_list args, spec *specific);
+void spec_d(char *str, spec *specific, va_list args);
 char *itoa_s21(long int n, char *buff, int base);
 char *reverse(char *str, int start, int end);
 #if defined(__APPLE__)

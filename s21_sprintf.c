@@ -15,8 +15,10 @@ int s21_sprintf(char *str, const char *format, ...) {
       format++;
       spec specific = {0};
       format = parser_flags(format, &specific);
-      format = parser_width(format, args, &specific.width);
+      format = parser_width(format, args, &specific);
       format = parser_accuracy(format, args, &specific);
+      //printf("%d\n",specific.width);
+      //printf("%d",specific.accuracy);
       if (*format == 'h' || *format == 'l') {
         switch (*format) {
           case 'h':
@@ -29,12 +31,12 @@ int s21_sprintf(char *str, const char *format, ...) {
             break;
         }
       }
-      format++;
       // спецификаторы
       switch (*format) {  //
         case 'c':         // diana
           break;
         case 'd':  // ksenia
+          spec_d(str,&specific, args);
           break;
         case 'f':  // diana
           break;
@@ -42,65 +44,19 @@ int s21_sprintf(char *str, const char *format, ...) {
           break;
         case 'u':
           break;
+        case '%':
+          break;
       }
-      format++;
-      /*if (*format == 'd') {
-        int value = va_arg(args, int);  // Извлекаем число
-        char temp[50];
-        sprintf(temp, "%d", value);  // Преобразуем число в строку
-
-        int len = strlen(temp);
-        if (value < 0) len--;  // Учитываем знак для отрицательных чисел
-        int zero_padding =
-            (specific.accuracy > len) ? specific.accuracy - len : 0;
-
-        // Если число отрицательное, добавляем место для знака
-        if (value < 0 && specific.accuracy > len) zero_padding++;
-
-        // Выводим пробелы слева, если ширина больше
-        if (specific.width > len + zero_padding && !specific.minus) {
-          int padding = specific.width - len - zero_padding;
-          while (padding-- > 0) {
-            *str++ = ' ';
-          }
-        }
-
-        // Копируем знак для отрицательных чисел
-        if (value < 0) {
-          *str++ = '-';
-          strcpy(temp, temp + 1);  // Убираем знак из строки
-        }
-
-        // Выводим ведущие нули для точности
-        while (zero_padding-- > 0) {
-          *str++ = '0';
-        }
-
-        // Копируем само число
-        strcpy(str, temp);
-        str += strlen(temp);
-
-        // Выводим пробелы справа, если выравнивание по левому краю
-        if (specific.width > len + zero_padding && specific.minus) {
-          int padding = specific.width - len - zero_padding;
-          while (padding-- > 0) {
-            *str++ = ' ';
-          }
-        }
-
-        format++;
-      }
-    }*/
-      *str = '\0';
-      va_end(args);
-      return (str - start);
     }
+    format++;
   }
+ // *str = '\0';
+  va_end(args);
+  return (str - start);
 }
 
 const char *parser_flags(const char *format, spec *specific) {
-  while (*format == '-' || *format == '+' || *format == ' ' || *format == '#' ||
-         *format == '0') {
+  while (*format == '-' || *format == '+' || *format == ' ') {
     switch (*format) {
       case '+':
         specific->plus = 1;
@@ -111,8 +67,6 @@ const char *parser_flags(const char *format, spec *specific) {
       case ' ':
         specific->space = 1;
         break;
-      case '0':
-        specific->zero = 1;
     }
     format++;
   }
@@ -121,33 +75,30 @@ const char *parser_flags(const char *format, spec *specific) {
        !specific->plus);  // не может быть плюс и пробел одновременно
   return format;
 }
-
-const char *parser_width(const char *format, va_list args, int *width) {
-  /*if (*format ==
-      '*') {  // есть два варианта ширины, если не звездочка, то другое
-    *width = va_arg(args, int);
-    format++;
-  } else {  // перевод символа в число
-  */
-  *width = 0;
+const char *parser_wa(const char *format, va_list args, int *value) {
+  *value = 0;
   while (*format >= '0' && *format <= '9') {
-    *width *= 10;
-    *width += *format - '0';
+    *value *= 10;
+    *value += *format - '0';
     format++;
   }
   return format;
 }
+
+const char *parser_width(const char *format, va_list args, spec *specific) {
+  return parser_wa(format, args, &specific->width);
+}
+
 const char *parser_accuracy(const char *format, va_list args, spec *specific) {
   if (*format == '.') {
-    specific->point = 1;  // точность используется
-    specific->zero = 0;   // тогда не надо ведущие нули
     format++;
-    format = parser_width(format, args, &specific->accuracy);
+    format = parser_wa(format, args, &specific->accuracy);
   } else {
     specific->accuracy = -1;  // не указана точность
   }
   return format;
 }
+
 void spec_d(char *str, spec *specific, va_list args) {
   long int n = 0;
   if (specific->length_h == 1)
@@ -156,28 +107,18 @@ void spec_d(char *str, spec *specific, va_list args) {
     n = (long)va_arg(args, long int);
   else
     n = va_arg(args, int);
-  itoa_s21(n, str, 10);
-  int len = strlen(str);
-  int len_accuracy_length = 0;
-  if (specific->accuracy != -1 && specific->accuracy > len)
-    len_accuracy_length = specific->accuracy - len;
-  // добавление знака
-  /*if (specific->minus == 1)
-    *str++ = '-';
-  else if (specific->plus == 1)
-    *str++ = '+';
-  else if (specific->space == 1)
-    *str++ = ' ';*/
-  // добавить обработку числа 0 с точностью 0
-  if (n != 0 ||
-      (specific->accuracy != -1 && len_accuracy_length != 0 && n == 0)) {
-    if (specific->minus == 1 && n < 0) *str++ = '-';
-    if (specific->plus == 1 && n >= 0) *str++ = '+';
-    if (specific->space == 1 && n >= 0) *str++ = ' ';
-    if (specific->zero == 1) {
-      for (int i = 0; i < len_accuracy_length; i++) *str++ = '0';
-    }
+  char buff[1024];
+  itoa_s21(n, buff, 10); //преобразовали в строку
+  int len = strlen(buff);
+  //int len_accuracy_length = 0;
+  char *start = str;
+  if (specific->width > len) {
+    for(int i = 0; i < specific->width - len; i++)
+      *str++ = ' ';
   }
+  strcpy(str, buff);
+  str += len;
+  *str = '\0';
 }
 char *itoa_s21(long int n, char *buff,
                int base) {  // преобразуемое число, строка, которой число
@@ -216,8 +157,7 @@ char *reverse(char *str, int start, int end) {
 }
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "%4d", 4, 42);
-  printf("Result: '%s'\n", buffer);
-  int n = 28;
-  printf("%d", n / 10);
+  s21_sprintf(buffer, "%2d", 320);
+  //sprintf(buffer, "%2d", 320);
+  printf("%s\n", buffer);
 }
