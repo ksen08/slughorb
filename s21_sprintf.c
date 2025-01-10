@@ -17,8 +17,8 @@ int s21_sprintf(char *str, const char *format, ...) {
       format = parser_flags(format, &specific);
       format = parser_width(format, args, &specific);
       format = parser_accuracy(format, args, &specific);
-      //printf("%d\n",specific.width);
-      //printf("%d",specific.accuracy);
+      // printf("%d\n",specific.width);
+      // printf("%d",specific.accuracy);
       if (*format == 'h' || *format == 'l') {
         switch (*format) {
           case 'h':
@@ -36,13 +36,13 @@ int s21_sprintf(char *str, const char *format, ...) {
         case 'c':         // diana
           break;
         case 'd':  // ksenia
-          spec_d(str,&specific, args);
+          spec_d(str, &specific, args);
           break;
         case 'f':  // diana
           break;
         case 's':  // ksenia
           break;
-        case 'u':
+        case 'u':  // ksenia
           break;
         case '%':
           break;
@@ -50,7 +50,7 @@ int s21_sprintf(char *str, const char *format, ...) {
     }
     format++;
   }
- // *str = '\0';
+  //*str = '\0';
   va_end(args);
   return (str - start);
 }
@@ -108,16 +108,39 @@ void spec_d(char *str, spec *specific, va_list args) {
   else
     n = va_arg(args, int);
   char buff[1024];
-  itoa_s21(n, buff, 10); //преобразовали в строку
+  itoa_s21(n, buff, 10);  // преобразовали в строку
   int len = strlen(buff);
-  //int len_accuracy_length = 0;
-  char *start = str;
-  if (specific->width > len) {
-    for(int i = 0; i < specific->width - len; i++)
-      *str++ = ' ';
+  int len2 = len;
+  int count = 0;
+  if (specific->accuracy && specific->accuracy > len) {
+    len2 += specific->accuracy - len;
   }
+  if (specific->plus) *str++ = '+';
+  if (specific->space && n >= 0) *str++ = ' ';
+  // printf("%d", len2);
+  if (*str == '-' && specific->plus && specific->space) {
+    count++;
+  }
+  // printf("%d\n", specific->accuracy);
+  // printf("%d\n", len2);
+  if (specific->width && specific->width > len2 && !specific->minus) {
+    for (int i = 0; i < specific->width - len2; i++) *str++ = ' ';
+  }
+  // printf("%d", specific->width - len2);
+  //  точность-спереди добавляются нули сколько точность столько и нулей если
+  //  ширина больше точности остальное заполняется пробелами
+  if (specific->accuracy > len) {
+    for (int i = 0; i < specific->accuracy - len; i++) *str++ = '0';
+  }
+  if (specific->plus) *str++ = '+';
+  // if (specific->space) *str++ = ' ';
   strcpy(str, buff);
   str += len;
+  if (specific->space) *str++ = ' ';
+  if (specific->width > len2 + count && specific->minus &&
+      !specific->space) {  // для минуса
+    for (int i = 0; i < specific->width - (len + count); i++) *str++ = ' ';
+  }
   *str = '\0';
 }
 char *itoa_s21(long int n, char *buff,
@@ -157,7 +180,11 @@ char *reverse(char *str, int start, int end) {
 }
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "%2d", 320);
-  //sprintf(buffer, "%2d", 320);
-  printf("%s\n", buffer);
+  s21_sprintf(buffer, "%-10.8d", 5);
+  //       sprintf(buffer, "%+-6.0d\n", 5);
+  //       printf("%s\n", buffer);
+  //       sprintf(buffer, "% +6.0d", 5);  // выводит плюс а не пробел
+  // sprintf(buffer, "% -10.8d", 5); //работал норм
+  // sprintf(buffer, "%-10.8d", 5);
+  printf("%s", buffer);
 }

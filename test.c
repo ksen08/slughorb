@@ -7,10 +7,10 @@ int main() {
     double y = modf(x,&n);
     printf("%lf", y);*/
     char buff[100];
-    sprintf(buff, "% +7.4d", 128);
+    sprintf(buff, "%-7d", 128);
     printf(buff);
 }
-if (n != 0 ||
+/*if (n != 0 ||
       (specific->accuracy != -1 && len_accuracy_length != 0 && n == 0)) {
     if (specific->minus == 1 && n < 0) *str++ = '-';
     if (specific->plus == 1 && n >= 0) *str++ = '+';
