@@ -115,32 +115,27 @@ void spec_d(char *str, spec *specific, va_list args) {
   if (specific->accuracy && specific->accuracy > len) {
     len2 += specific->accuracy - len;
   }
-  if (specific->plus) *str++ = '+';
-  if (specific->space && n >= 0) *str++ = ' ';
-  // printf("%d", len2);
-  if (*str == '-' && specific->plus && specific->space) {
-    count++;
+  //if (specific->space && n >= 0) *str++ = ' ';
+  if (specific->plus == 1 || specific->space == 1) {
+    count += 1;
   }
-  // printf("%d\n", specific->accuracy);
-  // printf("%d\n", len2);
-  if (specific->width && specific->width > len2 && !specific->minus) {
-    for (int i = 0; i < specific->width - len2; i++) *str++ = ' ';
+  if (specific->width && specific->width > (len2+count) && !specific->minus) {
+    for (int i = 0; i < specific->width - (len2+count); i++) *str++ = ' ';
   }
   // printf("%d", specific->width - len2);
   //  точность-спереди добавляются нули сколько точность столько и нулей если
   //  ширина больше точности остальное заполняется пробелами
+  if (specific->plus) *str++ = '+';
+  else if (specific->space) *str++ = ' ';
   if (specific->accuracy > len) {
     for (int i = 0; i < specific->accuracy - len; i++) *str++ = '0';
   }
-  if (specific->plus) *str++ = '+';
-  // if (specific->space) *str++ = ' ';
   strcpy(str, buff);
   str += len;
-  if (specific->space) *str++ = ' ';
-  if (specific->width > len2 + count && specific->minus &&
-      !specific->space) {  // для минуса
-    for (int i = 0; i < specific->width - (len + count); i++) *str++ = ' ';
+  if (specific->width > len2 + count && specific->minus) {  // для минуса
+    for (int i = 0; i < specific->width - (len2 + count); i++) *str++ = ' ';
   }
+  // printf("%d", specific->width - (len2 + count));
   *str = '\0';
 }
 char *itoa_s21(long int n, char *buff,
@@ -180,11 +175,13 @@ char *reverse(char *str, int start, int end) {
 }
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "%-10.8d", 5);
-  //       sprintf(buffer, "%+-6.0d\n", 5);
-  //       printf("%s\n", buffer);
-  //       sprintf(buffer, "% +6.0d", 5);  // выводит плюс а не пробел
-  // sprintf(buffer, "% -10.8d", 5); //работал норм
-  // sprintf(buffer, "%-10.8d", 5);
+  s21_sprintf(buffer, "%+ 10.8d", 5);
+  //sprintf(buffer, "%hd", 300000000);
+  //             sprintf(buffer, "%+-6.0d\n", 5);
+  //             printf("%s\n", buffer);
+  //             sprintf(buffer, "% +6.0d", 5);  // выводит плюс а не пробел
+  //sprintf(buffer, "% -10.8d", 5);  // работал норм
+  //sprintf(buffer, "%-10.8d", 5);  // работал
+  //sprintf(buffer, "%+ 10.8d", 5);
   printf("%s", buffer);
 }
