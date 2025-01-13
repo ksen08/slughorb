@@ -30,11 +30,12 @@ int s21_sprintf(char *str, const char *format, ...) {
         }
       }
       // спецификаторы
-      switch (*format) {  //
+      char specifier = *format;
+      switch (specifier) {  //
         case 'c':         // diana
           break;
         case 'd':  // ksenia
-          spec_d(str, &specific, args);
+          spec_d_or_u(ptr, &specific, args,'d');
           ptr += strlen(ptr);
           break;
         case 'f':  // diana
@@ -42,6 +43,8 @@ int s21_sprintf(char *str, const char *format, ...) {
         case 's':  // ksenia
           break;
         case 'u':  // ksenia
+          spec_d_or_u(ptr, &specific, args,'u');
+          ptr += strlen(ptr);
           break;
         case '%':
           *ptr++ = '%';
@@ -97,15 +100,30 @@ const char *parser_accuracy(const char *format, va_list args, spec *specific) {
   }
   return format;
 }
-
-char *spec_d(char *str, spec *specific, va_list args) {
-  long int n = 0;
+void signed_legth(long int *n, spec *specific, va_list args) {
   if (specific->length_h == 1)
-    n = (short)va_arg(args, int);  // извлекаем число
+    *n = (short)va_arg(args, int);  // извлекаем число
   else if (specific->length_l == 1)
-    n = (long)va_arg(args, long int);
+    *n = va_arg(args, long);
   else
-    n = va_arg(args, int);
+    *n = va_arg(args, int);
+}
+void unsigned_legth(long int *n, spec *specific, va_list args) {
+  if (specific->length_h == 1)
+    *n = (short unsigned)va_arg(args, unsigned);  // извлекаем число
+  else if (specific->length_l == 1)
+    *n = (unsigned long)va_arg(args, long long);
+  else
+    *n = (unsigned)va_arg(args, unsigned);
+}
+char *spec_d_or_u(char *str, spec *specific, va_list args, char specifier) {
+  long n = 0;
+  if(specifier == 'd') {
+    signed_legth(&n,specific,args);
+  } else if (specifier == 'u') {
+    unsigned long n = 0;
+    unsigned_legth((unsigned long*)&n,specific,args);
+  }
   char buff[1024];
   int negative = 0;
   if(n<0) negative = 1;
@@ -178,19 +196,25 @@ char *reverse(char *str, int start, int end) {
 }
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "HH%2.0dYYY", 5);
-  //sprintf(buffer, "HH%2.0dYYY", 5);
+  s21_sprintf(buffer, "%u", -1);
+  //sprintf(buffer, "%u", -1); //не работает
+  //sprintf(buffer, "%15.10lu", 1234567890L);//не работает 
+  //sprintf(buffer, "%15.10ld", 1234567890L);//работает 
+  //sprintf(buffer, "%ld", 2147483648L); //НЕ работает
+  //sprintf(buffer, "% 10.7u", 3);
+  //sprintf(buffer, "%%Uy", 0);
+  //sprintf(buffer, "HH% -10.12dYYY", -146);
  //sprintf(buffer, "%13.10d", 678); //работал и с отрицательным числом 
   //sprintf(buffer, "%9.1dUy", 0);
-  //sprintf(buffer, "HH%2.0dOO", 0); //некорректно работает
+ //sprintf(buffer, "HH%2.0dOO", 0); //работает
  // sprintf(buffer, "%.0d", 0); //ничего не должно выводится
   //sprintf(buffer, "%0.1d", 8581385185); //раб
   //sprintf(buffer, "%15.10d", 99999); //работает
-  //sprintf(buffer, "%10.5hd", 300000000); //работает
+ // sprintf(buffer, "%10.5hd", 300000000); //НЕ работает
   //sprintf(buffer, "%hd", 300000000);// раб
   //sprintf(buffer, "%+-6.0d\n", 5); //работает
   //sprintf(buffer, "% +6.0d", 5);  // работает
-  //sprintf(buffer, "% -10.8d", 5);  // работал норм
+  //sprintf(buffer, "% -10.8d", -5);  // работал норм
   //sprintf(buffer, "%-10.8d", 5);  // работал
   //sprintf(buffer, "%+ 10.8d", 5);//работал
   printf("%s\n", buffer);
