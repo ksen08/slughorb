@@ -126,7 +126,7 @@ char *spec_d_or_u(char *str, spec *specific, va_list args, char specifier) {
   char buff[1024];
   int negative = 0;
   if (n < 0) negative = 1;
-  itoa_s21(n, buff, 10);  // преобразовали в строку
+  itoa_s21(n, buff);  // преобразовали в строку
   int len = strlen(buff);
   int len2 = len;
   int count = 0;
@@ -163,9 +163,9 @@ char *spec_d_or_u(char *str, spec *specific, va_list args, char specifier) {
   *str = '\0';
   return str;
 }
-char *itoa_s21(long int n, char *buff,
-               int base) {  // преобразуемое число, строка, которой число
-                            // должно стать, основание системы
+char *itoa_s21(long int n,
+               char *buff) {  // преобразуемое число, строка, которой число
+  // должно стать, основание системы
   int i = 0;
   int minus = 0;
   if (n < 0) {
@@ -201,26 +201,33 @@ char *reverse(char *str, int start, int end) {
 // u не надо пробел флаг
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "%12.10u", 3);
-  sprintf(buffer, "% 12.10d", -1);  // не работает
-  // sprintf(buffer, "%15.10lu", 1234567890L);//не работает
-  // sprintf(buffer, "%15.10ld", 1234567890L);//работает
-  // sprintf(buffer, "%ld", 2147483648L); //НЕ работает
-  // sprintf(buffer, "% 10.7u", 3);
-  // sprintf(buffer, "%%Uy", 0);
-  // sprintf(buffer, "HH% -10.12dYYY", -146);
-  // sprintf(buffer, "%13.10d", 678); //работал и с отрицательным числом
-  // sprintf(buffer, "%9.1dUy", 0);
-  // sprintf(buffer, "HH%2.0dOO", 0); //работает
-  //  sprintf(buffer, "%.0d", 0); //ничего не должно выводится
-  // sprintf(buffer, "%0.1d", 8581385185); //раб
-  // sprintf(buffer, "%15.10d", 99999); //работает
-  // sprintf(buffer, "%10.5hd", 300000000); //НЕ работает
-  // sprintf(buffer, "%hd", 300000000);// раб
-  // sprintf(buffer, "%+-6.0d\n", 5); //работает
-  // sprintf(buffer, "% +6.0d", 5);  // работает
-  sprintf(buffer, "%10.8u", -5);  // работал норм
-  // sprintf(buffer, "%-10.8d", 5);  // работал
-  // sprintf(buffer, "%+ 10.8d", 5);//работал
+  // s21_sprintf(buffer, "%15.10lu", 1234567890L);
+  sprintf(buffer, "%%", 123);
+  // sprintf(buffer, " %5u %5u %.5u", 123, -456, 789); //работает
+  /*const char *format = "%hd %ld";
+  short sh = 123;
+  long lg = 456789L;*/
+  // int res1 = s21_sprintf(buffer, format, sh, lg); работает
+  //  sprintf(buffer, "% -10.7u", 2147483648);
+  //  sprintf(buffer, "+d % d % -d", 123, -456, 789); //работает
+  //   sprintf(buffer, "% -10.7u", 3);
+  //      sprintf(buffer, "%15.10lu", 1234567890L);//работает
+  // sprintf(buffer, "%ld", 2147483648L);  //работает
+  //      sprintf(buffer, "% 10.7u", 3);
+  //      sprintf(buffer, "%%Uy", 0);
+  //      sprintf(buffer, "HH% -10.12dYYY", -146);
+  //      sprintf(buffer, "%13.10d", 678); //работал и с отрицательным
+  //      числом sprintf(buffer, "%9.1dUy", 0); sprintf(buffer, "HH%2.0dOO",
+  //      0); //работает sprintf(buffer, "%.0d", 0); //ничего не должно
+  //      выводится sprintf(buffer, "%0.1d", 8581385185); //раб
+  //      sprintf(buffer, "%15.10d", 99999); //работает
+  // sprintf(buffer, "%15.5ld", 300000000000000);  // работает
+  // s21_sprintf(buffer, "%15.5ld", 300000000);
+  // sprintf(buffer, "%15.5hd", 300000000);  // не раб
+  //           sprintf(buffer, "%+-6.0d\n", 5); //работает
+  //           sprintf(buffer, "% +6.0d", 5);  // работает
+  //          sprintf(buffer, "%10.8u", -5);  // работал норм
+  //          sprintf(buffer, "%-10.8d", 5);  // работал
+  //          sprintf(buffer, "%+ 10.8d", 5);//работал
   printf("%s\n", buffer);
 }

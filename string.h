@@ -23,7 +23,7 @@ const char *parser_wa(const char *format, va_list args, int *value);
 const char *parser_width(const char *format, va_list args, spec *specific);
 const char *parser_accuracy(const char *format, va_list args, spec *specific);
 char *spec_d_or_u(char *str, spec *specific, va_list args, char specifier);
-char *itoa_s21(long int n, char *buff, int base);
+char *itoa_s21(long int n, char *buff);
 char *reverse(char *str, int start, int end);
 #if defined(__APPLE__)
 #define N 106
