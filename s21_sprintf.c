@@ -32,10 +32,10 @@ int s21_sprintf(char *str, const char *format, ...) {
       // спецификаторы
       char specifier = *format;
       switch (specifier) {  //
-        case 'c':         // diana
+        case 'c':           // diana
           break;
         case 'd':  // ksenia
-          spec_d_or_u(ptr, &specific, args,'d');
+          spec_d_or_u(ptr, &specific, args, 'd');
           ptr += strlen(ptr);
           break;
         case 'f':  // diana
@@ -43,7 +43,7 @@ int s21_sprintf(char *str, const char *format, ...) {
         case 's':  // ksenia
           break;
         case 'u':  // ksenia
-          spec_d_or_u(ptr, &specific, args,'u');
+          spec_d_or_u(ptr, &specific, args, 'u');
           ptr += strlen(ptr);
           break;
         case '%':
@@ -118,15 +118,14 @@ void unsigned_legth(long int *n, spec *specific, va_list args) {
 }
 char *spec_d_or_u(char *str, spec *specific, va_list args, char specifier) {
   long n = 0;
-  if(specifier == 'd') {
-    signed_legth(&n,specific,args);
+  if (specifier == 'd') {
+    signed_legth(&n, specific, args);
   } else if (specifier == 'u') {
-    unsigned long n = 0;
-    unsigned_legth((unsigned long*)&n,specific,args);
+    unsigned_legth((unsigned long *)&n, specific, args);
   }
   char buff[1024];
   int negative = 0;
-  if(n<0) negative = 1;
+  if (n < 0) negative = 1;
   itoa_s21(n, buff, 10);  // преобразовали в строку
   int len = strlen(buff);
   int len2 = len;
@@ -134,22 +133,27 @@ char *spec_d_or_u(char *str, spec *specific, va_list args, char specifier) {
   if (specific->accuracy && specific->accuracy > len) {
     len2 += specific->accuracy - len - negative;
   }
-  if (negative == 1 || specific->plus == 1 || specific->space == 1) {
+  if ((negative == 1 || specific->plus == 1 || specific->space == 1) &&
+      specifier != 'u') {
     count += 1;
   }
-  if (specific->width && specific->width > (len2+count) && !specific->minus) {
-    for (int i = 0; (i - negative) < specific->width - (len2+count); i++) *str++ = ' ';
+  if (specific->width && specific->width > (len2 + count) && !specific->minus) {
+    for (int i = 0; (i - negative) < specific->width - (len2 + count); i++)
+      *str++ = ' ';
   }
-  if(negative == 1){
-    *str++ = '-';
+  if (specifier != 'u') {
+    if (negative == 1) {
+      *str++ = '-';
+    } else if (specific->plus)
+      *str++ = '+';
+    else if (specific->space)
+      *str++ = ' ';
   }
-  else if (specific->plus) *str++ = '+';
-  else if (specific->space) *str++ = ' ';
   if (specific->accuracy > len - negative) {
     for (int i = 0; i < specific->accuracy - len; i++) *str++ = '0';
   }
-  if(specific->accuracy == 0 && *buff == '0') {
-    *buff = ' '; //потом скорее всего неправильно будет работать
+  if (specific->accuracy == 0 && *buff == '0') {
+    *buff = ' ';  // потом скорее всего неправильно будет работать
   }
   strncpy(str, buff, len);
   str += len;
@@ -194,28 +198,29 @@ char *reverse(char *str, int start, int end) {
   }
   return str;
 }
+// u не надо пробел флаг
 int main() {
   char buffer[100];
-  s21_sprintf(buffer, "%u", -1);
-  //sprintf(buffer, "%u", -1); //не работает
-  //sprintf(buffer, "%15.10lu", 1234567890L);//не работает 
-  //sprintf(buffer, "%15.10ld", 1234567890L);//работает 
-  //sprintf(buffer, "%ld", 2147483648L); //НЕ работает
-  //sprintf(buffer, "% 10.7u", 3);
-  //sprintf(buffer, "%%Uy", 0);
-  //sprintf(buffer, "HH% -10.12dYYY", -146);
- //sprintf(buffer, "%13.10d", 678); //работал и с отрицательным числом 
-  //sprintf(buffer, "%9.1dUy", 0);
- //sprintf(buffer, "HH%2.0dOO", 0); //работает
- // sprintf(buffer, "%.0d", 0); //ничего не должно выводится
-  //sprintf(buffer, "%0.1d", 8581385185); //раб
-  //sprintf(buffer, "%15.10d", 99999); //работает
- // sprintf(buffer, "%10.5hd", 300000000); //НЕ работает
-  //sprintf(buffer, "%hd", 300000000);// раб
-  //sprintf(buffer, "%+-6.0d\n", 5); //работает
-  //sprintf(buffer, "% +6.0d", 5);  // работает
-  //sprintf(buffer, "% -10.8d", -5);  // работал норм
-  //sprintf(buffer, "%-10.8d", 5);  // работал
-  //sprintf(buffer, "%+ 10.8d", 5);//работал
+  s21_sprintf(buffer, "%12.10u", 3);
+  sprintf(buffer, "% 12.10d", -1);  // не работает
+  // sprintf(buffer, "%15.10lu", 1234567890L);//не работает
+  // sprintf(buffer, "%15.10ld", 1234567890L);//работает
+  // sprintf(buffer, "%ld", 2147483648L); //НЕ работает
+  // sprintf(buffer, "% 10.7u", 3);
+  // sprintf(buffer, "%%Uy", 0);
+  // sprintf(buffer, "HH% -10.12dYYY", -146);
+  // sprintf(buffer, "%13.10d", 678); //работал и с отрицательным числом
+  // sprintf(buffer, "%9.1dUy", 0);
+  // sprintf(buffer, "HH%2.0dOO", 0); //работает
+  //  sprintf(buffer, "%.0d", 0); //ничего не должно выводится
+  // sprintf(buffer, "%0.1d", 8581385185); //раб
+  // sprintf(buffer, "%15.10d", 99999); //работает
+  // sprintf(buffer, "%10.5hd", 300000000); //НЕ работает
+  // sprintf(buffer, "%hd", 300000000);// раб
+  // sprintf(buffer, "%+-6.0d\n", 5); //работает
+  // sprintf(buffer, "% +6.0d", 5);  // работает
+  sprintf(buffer, "%10.8u", -5);  // работал норм
+  // sprintf(buffer, "%-10.8d", 5);  // работал
+  // sprintf(buffer, "%+ 10.8d", 5);//работал
   printf("%s\n", buffer);
 }
